@@ -1,9 +1,11 @@
 const express = require('express')
 const authService = require('./auth.service')
+const authorise = require('../../middleware/authorise')
+const Role = require('../../types/userRole')
 
 const router = express.Router()
 
-router.post('/login', async (req, res) => {
+router.post('/login', authorise(Role.Admin), async (req, res) => {
   console.log(req.body)
   const { username, password } = req.body
 
