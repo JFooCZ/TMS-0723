@@ -25,9 +25,9 @@ router.post('/login', async (req, res) => {
   }
 
   // Store the username in the session
-  req.session.isLoggedIn = true
-  req.session.username = username
-  req.status(201).json(result.data)
+  // req.session.isLoggedIn = true
+  // req.session.username = username
+  res.status(201).json(result.data)
 })
 
 module.exports = router
