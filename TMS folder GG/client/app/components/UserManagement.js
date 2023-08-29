@@ -1,21 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import Axios from "axios"
 import CreateUser from "./CreateUser"
 import UpdateUserDetails from "./UpdateUserDetails"
 import Dialog from "@mui/material/Dialog"
 import DialogTitle from "@mui/material/DialogTitle"
 import DialogContent from "@mui/material/DialogContent"
+import Page from "./Page"
+import api from "../API"
+// console.log(api)
 
 function UserManagement({ isAdmin }) {
   const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [allUsergroups, setAllUsergroups] = useState([])
   const [error, setError] = useState("")
-  const [showCreateUser, setShowCreateUser] = useState(false)
-  const [showUpdateUser, setShowUpdateUser] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [openModal, setOpenModal] = useState(false)
+  const [createUserModal, setCreateUserModal] = useState(false) // New state for CreateUser Modal
+
+  const handleOpenCreateUserModal = () => {
+    setCreateUserModal(true)
+  }
+
+  const handleCloseCreateUserModal = () => {
+    setCreateUserModal(false)
+  }
   const handleOpenModal = (user) => {
     setSelectedUser(user)
     setOpenModal(true)
@@ -23,20 +32,22 @@ function UserManagement({ isAdmin }) {
 
   const handleCloseModal = () => {
     setOpenModal(false)
+    setSelectedUser(null)
   }
 
   const fetchData = useCallback(() => {
     const token = localStorage.getItem("tmsToken")
 
-    Axios.post(
-      "http://localhost:8000/getallusers",
-      { token },
-      {
-        headers: {
-          "Content-Type": "application/json"
+    api
+      .post(
+        "/getallusers",
+        { token },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      }
-    )
+      )
       .then((response) => {
         if (response.data.error) {
           setError(response.data.error)
@@ -46,15 +57,16 @@ function UserManagement({ isAdmin }) {
       })
       .catch((err) => console.log(err))
 
-    Axios.post(
-      "http://localhost:8000/getallusergroups",
-      { token },
-      {
-        headers: {
-          "Content-Type": "application/json"
+    api
+      .post(
+        "/getallusergroups",
+        { token },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      }
-    )
+      )
       .then((response) => {
         if (response.data.error) {
           setError(response.data.error)
@@ -78,28 +90,40 @@ function UserManagement({ isAdmin }) {
     return null
   }
 
-  const handleCreateUserClick = () => {
-    setShowCreateUser(true)
-    setShowUpdateUser(false)
-  }
+  // const handleCreateUserClick = () => {
+  //   setShowCreateUser(true)
+  //   setShowUpdateUser(false)
+  // }
 
-  const handleUpdateUserClick = (user) => {
-    if (user) {
-      setSelectedUser(user)
-      setShowUpdateUser(true)
-      setShowCreateUser(false)
-    } else {
-      setShowUpdateUser(false)
-    }
-  }
+  // const handleUpdateUserClick = (user) => {
+  //   if (user) {
+  //     setSelectedUser(user)
+  //     setShowUpdateUser(true)
+  //     setShowCreateUser(false)
+  //   } else {
+  //     setShowUpdateUser(false)
+  //   }
+  // }
 
   return (
-    <div>
-      <h1>User Management</h1>
-      <button onClick={handleCreateUserClick}>Create New User</button>
-      <button onClick={handleUpdateUserClick}>Update User's Details</button> {showCreateUser && <CreateUser />}
-      {/* {showUpdateUser && selectedUser && <UpdateUserDetails userData={selectedUser} />} */}
-      {showUpdateUser && (
+    <Page>
+      <div>
+        <h1>User Management</h1>
+        <button onClick={handleOpenCreateUserModal}>Create New User</button> {/* Open Modal on button click */}
+        {selectedUser && (
+          <Dialog open={openModal} onClose={handleCloseModal}>
+            <DialogTitle>Update User Details</DialogTitle>
+            <DialogContent>{selectedUser && <UpdateUserDetails userData={selectedUser} allUsergroups={allUsergroups} handleCloseModal={handleCloseModal} fetchData={fetchData} />}</DialogContent>
+          </Dialog>
+        )}
+        {/* New CreateUser Modal */}
+        <Dialog open={createUserModal} onClose={handleCloseCreateUserModal}>
+          <DialogTitle>Create New User</DialogTitle>
+          <DialogContent>
+            <CreateUser handleCloseModal={handleCloseCreateUserModal} fetchData={fetchData} />
+          </DialogContent>
+        </Dialog>
+        {error && <div className="error">{error}</div>}
         <div>
           <table>
             <thead>
@@ -113,26 +137,28 @@ function UserManagement({ isAdmin }) {
             </thead>
             <tbody>
               {users.map((user, index) => (
-                <tr key={index}>
-                  <td>{user.username}</td>
-                  <td>{user.email}</td>
+                <tr key={index} className={index % 2 === 1 ? "odd" : ""}>
+                  <td className="break-word">{user.username}</td>
+                  <td className="break-word">{user.email}</td>
                   <td>{user.userstatus == "1" ? "Enabled" : "Disabled"}</td>
-                  <td>{user.usergroups}</td>
+                  <td className="break-word">{user.usergroups}</td>
                   <td>
                     <button onClick={() => handleOpenModal(user)}>Edit</button>
                   </td>
                 </tr>
               ))}
             </tbody>
-            <Dialog open={openModal} onClose={handleCloseModal}>
-              <DialogTitle>Update User Details</DialogTitle>
-              <DialogContent>{selectedUser && <UpdateUserDetails userData={selectedUser} allUsergroups={allUsergroups} handleCloseModal={handleCloseModal} fetchData={fetchData} />}</DialogContent>
-            </Dialog>
           </table>
         </div>
-      )}
-      {error && <div className="error">{error}</div>}
-    </div>
+        {selectedUser && (
+          <Dialog open={openModal} onClose={handleCloseModal}>
+            <DialogTitle>Update User Details</DialogTitle>
+            <DialogContent>{selectedUser && <UpdateUserDetails userData={selectedUser} allUsergroups={allUsergroups} handleCloseModal={handleCloseModal} fetchData={fetchData} />}</DialogContent>
+          </Dialog>
+        )}
+        {error && <div className="error">{error}</div>}
+      </div>
+    </Page>
   )
 }
 

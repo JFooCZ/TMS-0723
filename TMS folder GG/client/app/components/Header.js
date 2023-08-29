@@ -9,7 +9,7 @@ function Header(props) {
     window.scrollTo(0, 0)
   }, [])
 
-  function handleSubmit() {}
+  // function handleSubmit() {}
 
   return (
     <header className="header-bar bg-primary mb-3">
@@ -19,7 +19,7 @@ function Header(props) {
             TMS
           </Link>
         </h4>
-        {props.loggedIn ? <HeaderLoggedIn loggedIn={props.loggedIn} setLoggedIn={props.setLoggedIn} setIsAdmin={props.setIsAdmin} /> : <HeaderLoggedOut setLoggedIn={props.setLoggedIn} setIsAdmin={props.setIsAdmin} />}{" "}
+        {props.loggedIn ? <HeaderLoggedIn loggedIn={props.loggedIn} setLoggedIn={props.setLoggedIn} isAdmin={props.isAdmin} setIsAdmin={props.setIsAdmin} /> : <HeaderLoggedOut setLoggedIn={props.setLoggedIn} setIsAdmin={props.setIsAdmin} />}{" "}
       </div>
     </header>
   )

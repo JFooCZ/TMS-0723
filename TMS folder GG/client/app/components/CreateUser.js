@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from "react"
-import Axios from "axios"
-
-function CreateUser() {
+import api from "../API"
+function CreateUser({ handleCloseModal, fetchData }) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [email, setEmail] = useState("")
   const [usergroups, setUsergroups] = useState([])
   const [selectedUsergroups, setSelectedUsergroups] = useState([])
-  const [userstatus, setUserstatus] = useState("")
+  const [userstatus, setUserstatus] = useState(1)
   const [error, setError] = useState("")
+  // console.log(api)
 
   useEffect(() => {
     const token = localStorage.getItem("tmsToken") // Get the admin token
 
     // Call to get usergroups from server here and set it to usergroups state
-    Axios.post(
-      "http://localhost:8000/getallusergroups",
-      { token }, // Add token to request body
-      {
-        headers: {
-          "Content-Type": "application/json"
+    api
+      .post(
+        "/getallusergroups",
+        { token }, // Add token to request body
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      }
-    )
+      )
       .then((response) => {
-        console.log(response.data.response) // <-- Add this line
+        // console.log(response.data.response)
 
         if (response.data.error) {
           setError(response.data.error)
@@ -47,8 +48,8 @@ function CreateUser() {
     setError("") // Also clear any error messages
     try {
       const token = localStorage.getItem("tmsToken")
-      const response = await Axios.post(
-        "http://localhost:8000/createnewuser",
+      const response = await api.post(
+        "/createnewuser",
         { token, newUsername: username, password, email, usergroups: selectedUsergroups, userstatus },
         {
           headers: {
@@ -59,14 +60,26 @@ function CreateUser() {
 
       if (response.data.error) {
         setError(response.data.error)
+      }
+      if (!userstatus) {
+        setError("User status must be selected.")
+        return
       } else {
         setSuccess("User has been successfully created") // Set the success message when creation is successful
+        fetchData()
+
+        setUsername("")
+        setPassword("")
+        setEmail("")
+        setSelectedUsergroups([])
+        setUserstatus(1)
       }
     } catch (e) {
       console.log(e)
     }
   }
 
+  // Form
   return (
     <form onSubmit={handleSubmit}>
       <h6>* fields are mandatory</h6>
@@ -94,15 +107,16 @@ function CreateUser() {
       <div>
         <strong>Userstatus*</strong>
         <div>
-          <input type="radio" id="enabled" name="status" value="1" onChange={(e) => setUserstatus(e.target.value)} required />
+          <input type="radio" defaultChecked={true} id="enabled" name="status" value="1" onChange={(e) => setUserstatus(e.target.value)} />
           <label htmlFor="enabled">Enabled</label>
         </div>
         <div>
-          <input type="radio" id="disabled" name="status" value="0" onChange={(e) => setUserstatus(e.target.value)} required />
+          <input type="radio" id="disabled" name="status" value="0" onChange={(e) => setUserstatus(e.target.value)} />
           <label htmlFor="disabled">Disabled</label>
         </div>
       </div>
       <button type="submit">Create User</button>
+      <button onClick={handleCloseModal}>Done</button>
       {success && <div className="success">{success}</div>} {/* Show the success message when it's set */}
       {error && <div className="error">{error}</div>}
     </form>

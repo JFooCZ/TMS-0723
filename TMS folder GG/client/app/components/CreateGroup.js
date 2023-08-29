@@ -1,5 +1,6 @@
 import React, { useState } from "react"
-import Axios from "axios"
+import api from "../API"
+// console.log(api)
 
 function CreateGroup({ fetchUserGroups }) {
   const [newUsergroup, setNewUsergroup] = useState("")
@@ -10,25 +11,29 @@ function CreateGroup({ fetchUserGroups }) {
 
     const token = localStorage.getItem("tmsToken")
 
-    Axios.post(
-      "http://localhost:8000/createusergroup",
-      { usergroups: newUsergroup, token },
-      {
-        headers: {
-          "Content-Type": "application/json"
+    api
+      .post(
+        "/createusergroup",
+        { usergroups: newUsergroup, token },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      }
-    )
+      )
       .then((response) => {
         if (response.data.error) {
           setError(response.data.error)
         } else {
-          // Clear the newUsergroup state
-          setNewUsergroup("")
+          setNewUsergroup("") // Clear the newUsergroup state
           fetchUserGroups()
         }
       })
-      .catch((err) => console.log(err))
+      .catch((err) => {
+        if (err && err.response.status === 403 && err.response.data.error === "User is disabled") {
+        }
+        console.log(err)
+      })
   }
 
   return (

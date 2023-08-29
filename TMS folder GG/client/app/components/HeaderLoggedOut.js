@@ -1,5 +1,6 @@
 import React, { useState } from "react"
-import Axios from "axios"
+import api from "../API"
+console.log(api)
 
 function HeaderLoggedOut(props) {
   const [username, setUsername] = useState("")
@@ -15,17 +16,17 @@ function HeaderLoggedOut(props) {
           "Access-Control-Allow-Origin": "*"
         }
       }
-      const response = await Axios.post("http://localhost:8000/login", { username, password }, config)
-      console.log("Login response data:", response.data) // Add this line
+      const response = await api.post("/login", { username, password }, config)
+      // console.log("Login response data:", response.data)
 
       if (response.data.error) {
-        setError(response.data.error) // Set the error message
+        setError(response.data.error)
       } else {
         localStorage.setItem("tmsToken", response.data.token)
         props.setLoggedIn(true)
 
-        const checkgroupRes = await Axios.post(
-          "http://localhost:8000/checkgroup",
+        const checkgroupRes = await api.post(
+          "/checkgroup",
           { token: response.data.token },
           {
             headers: {
@@ -36,12 +37,11 @@ function HeaderLoggedOut(props) {
 
         const checkgroupData = await checkgroupRes.data // get data from response
 
-        // Set isAdmin based on response from /checkgroup
         props.setIsAdmin(checkgroupData.response === "User is part of the admin group")
         setError("") // Clear the error message when the login is successful
       }
 
-      console.log(response.data)
+      // console.log(response.data)
     } catch (e) {
       console.log(e)
     }
@@ -61,11 +61,7 @@ function HeaderLoggedOut(props) {
           </div>
         </div>
       </form>
-      <>
-        {" "}
-        {error && <div className="error">{error}</div>}
-        {/* got time then do css for error  */}
-      </>
+      <> {error && <div className="error">{error}</div>}</>
     </div>
   )
 }

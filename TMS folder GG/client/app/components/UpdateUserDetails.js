@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react"
-import Axios from "axios"
-
+import api from "../API"
 function UpdateUserDetails({ userData, handleCloseModal, allUsergroups, fetchData }) {
   const [username, setUsername] = useState(userData.username || "")
   const [password, setPassword] = useState("")
@@ -8,10 +7,11 @@ function UpdateUserDetails({ userData, handleCloseModal, allUsergroups, fetchDat
   const [userStatus, setUserStatus] = useState(userData.userstatus || "0")
   const [usergroups, setUsergroups] = useState(userData.usergroups ? userData.usergroups.split(",") : [])
   const [error, setError] = useState("")
+  // console.log(api)
 
   useEffect(() => {
     //console.log(userData)
-    console.log(allUsergroups)
+    // console.log(allUsergroups)
     setUsername(userData.username || "")
     setEmail(userData.email || "")
     setUserStatus(userData.userstatus || "0")
@@ -38,11 +38,12 @@ function UpdateUserDetails({ userData, handleCloseModal, allUsergroups, fetchDat
     }
 
     // Send the data to the server
-    Axios.post("http://localhost:8000/changeuserdetails", data, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
+    api
+      .post("/changeuserdetails", data, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
       .then((response) => {
         if (response.data.error) {
           setError(response.data.error)
